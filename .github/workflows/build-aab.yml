@@ -4,7 +4,10 @@
 # 2. Actions > run this workflow (or push a commit — it runs on push).
 # 3. Download APK + AAB from the run's Artifacts.
 # No secrets needed for a debug build. For a Play release build, add
-# a release keystore as GitHub secrets and wire signing in before building.
+# these GitHub secrets (repo Settings > Secrets and variables > Actions):
+#   KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
+# The "Restore release keystore" step below uses them; without them the
+# build falls back to debug signing (see app/build.gradle.kts).
 name: Build APK + AAB
 
 on:
@@ -20,6 +23,8 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
+          # JDK 21: AGP 9.3's release lint calls List.removeLast() (a Java 21
+          # API) and crashes with NoSuchMethodError on JDK 17.
           java-version: '21'
       - uses: subosito/flutter-action@v2
         with:
@@ -34,9 +39,29 @@ jobs:
           if [ -f assets/icon.png.b64 ]; then base64 -d assets/icon.png.b64 > assets/icon.png; fi
           if [ -f android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png.b64 ]; then base64 -d android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png.b64 > android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png; fi
           if [ -f android/gradle/wrapper/gradle-wrapper.jar.b64 ]; then base64 -d android/gradle/wrapper/gradle-wrapper.jar.b64 > android/gradle/wrapper/gradle-wrapper.jar; fi
+      # Files uploaded through the GitHub web UI lose their executable bit —
+      # gradlew lands as 100644 and `flutter build` cannot run it.
       - name: Make gradlew executable
         run: chmod +x android/gradlew
+      # Release signing: restore the upload keystore + key.properties from
+      # GitHub secrets. If the secrets are not set, this is a no-op and the
+      # build falls back to debug signing.
+      - name: Restore release keystore (if secrets are set)
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/upload-keystore.jks
+            cat > android/key.properties <<EOF
+            storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+            keyPassword=${{ secrets.KEY_PASSWORD }}
+            keyAlias=${{ secrets.KEY_ALIAS }}
+            storeFile=upload-keystore.jks
+            EOF
+          fi
       - run: flutter pub get
+      # Plain `flutter analyze` exits 1 on Flutter 3.50: importing
+      # package:flutter/material.dart is flagged as a deprecated-member info
+      # (it suggests package:material_ui instead). --no-fatal-infos keeps
+      # real errors failing the build while that info stays a warning.
       - run: flutter analyze --no-fatal-infos
       - run: flutter build apk --release
       - run: flutter build appbundle --release
