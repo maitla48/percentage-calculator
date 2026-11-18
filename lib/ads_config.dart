@@ -14,11 +14,13 @@
 // ads and earn nothing. Never ship production with them.
 
 class AdsConfig {
-  // TODO(RELEASE): replace with real Banner ad unit ID.
+  // Real IDs from AdMob (eagle202090@yahoo.com), created 2026-11-18.
+  // App: "Percentage Calculator", AdMob App ID
+  // ca-app-pub-6955275421921843~7431070247 (see AndroidManifest.xml).
   static const String bannerAdUnitId =
       'ca-app-pub-6955275421921843/1817323472';
 
-  // TODO(RELEASE): replace with real Interstitial ad unit ID.
+  // Real Interstitial ad unit ID.
   static const String interstitialAdUnitId =
       'ca-app-pub-6955275421921843/7480713691';
 
