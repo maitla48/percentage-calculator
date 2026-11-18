@@ -37,10 +37,11 @@
                 android:value="androidx.startup"
                 tools:node="remove" />
         </provider>
-        <!-- TODO(RELEASE): replace test App ID with the real AdMob App ID from eagle202090@yahoo.com -->
+        <!-- Real AdMob App ID (eagle202090@yahoo.com), created 2026-11-18.
+             App: "Percentage Calculator" -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="ca-app-pub-6955275421921843~7431070247" />
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
