@@ -45,17 +45,17 @@ jobs:
         run: chmod +x android/gradlew
       # Release signing: restore the upload keystore + key.properties from
       # GitHub secrets. If the secrets are not set, this is a no-op and the
-      # build falls back to debug signing.
+      # build falls back to debug signing. (No heredoc here: a heredoc's
+      # closing EOF must sit at column 0, which a YAML block scalar cannot
+      # express, so plain echo lines are used instead.)
       - name: Restore release keystore (if secrets are set)
         run: |
           if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
             echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/upload-keystore.jks
-            cat > android/key.properties <<EOF
-            storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-            keyPassword=${{ secrets.KEY_PASSWORD }}
-            keyAlias=${{ secrets.KEY_ALIAS }}
-            storeFile=upload-keystore.jks
-            EOF
+            echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
+            echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+            echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+            echo "storeFile=upload-keystore.jks" >> android/key.properties
           fi
       - run: flutter pub get
       # Plain `flutter analyze` exits 1 on Flutter 3.50: importing
