@@ -1,0 +1,48 @@
+# Build Percentage Calculator APK + AAB on GitHub Actions.
+# Use this if the Muse sandbox cannot build (Gradle/Java network blocked).
+# 1. Create a GitHub repo, push this whole percentage-calculator folder.
+# 2. Actions > run this workflow (or push a commit — it runs on push).
+# 3. Download APK + AAB from the run's Artifacts.
+# No secrets needed for a debug build. For a Play release build, add
+# a release keystore as GitHub secrets and wire signing in before building.
+name: Build APK + AAB
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.50.0'
+          channel: stable
+      # Binary files are stored as base64 text in the repo only when pushed
+      # via the Muse GitHub connector (it only pushes UTF-8 files) — restore
+      # them if present. When files were uploaded from the zip, the raw
+      # binaries are already there, so this step is a no-op.
+      - name: Restore binary files (if present as .b64)
+        run: |
+          if [ -f assets/icon.png.b64 ]; then base64 -d assets/icon.png.b64 > assets/icon.png; fi
+          if [ -f android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png.b64 ]; then base64 -d android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png.b64 > android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png; fi
+          if [ -f android/gradle/wrapper/gradle-wrapper.jar.b64 ]; then base64 -d android/gradle/wrapper/gradle-wrapper.jar.b64 > android/gradle/wrapper/gradle-wrapper.jar; fi
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter build apk --release
+      - run: flutter build appbundle --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
