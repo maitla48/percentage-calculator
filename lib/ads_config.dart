@@ -16,11 +16,11 @@
 class AdsConfig {
   // TODO(RELEASE): replace with real Banner ad unit ID.
   static const String bannerAdUnitId =
-      'ca-app-pub-3940256099942544/6300978111';
+      'ca-app-pub-6955275421921843/1817323472';
 
   // TODO(RELEASE): replace with real Interstitial ad unit ID.
   static const String interstitialAdUnitId =
-      'ca-app-pub-3940256099942544/1033173712';
+      'ca-app-pub-6955275421921843/7480713691';
 
   // Policy: never show an interstitial on app load or on exit, and never
   // more than one per two user actions. This app shows one only after
