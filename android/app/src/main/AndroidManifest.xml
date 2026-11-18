@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <application
@@ -21,6 +22,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- WorkManager is pulled in by the AdMob consent (UMP) SDK, and its
+             startup initializer crashes on launch: it cannot create its
+             WorkDatabase in the R8-shrunk release build. This app never uses
+             WorkManager, so stop it auto-initializing at startup. (It will
+             still initialize lazily if anything ever needs it.) -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
         <!-- TODO(RELEASE): replace test App ID with the real AdMob App ID from eagle202090@yahoo.com -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
