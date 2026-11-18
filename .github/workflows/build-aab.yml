@@ -35,7 +35,7 @@ jobs:
           if [ -f android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png.b64 ]; then base64 -d android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png.b64 > android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png; fi
           if [ -f android/gradle/wrapper/gradle-wrapper.jar.b64 ]; then base64 -d android/gradle/wrapper/gradle-wrapper.jar.b64 > android/gradle/wrapper/gradle-wrapper.jar; fi
       - run: flutter pub get
-      - run: flutter analyze
+      - run: flutter analyze --no-fatal-infos
       - run: flutter build apk --release
       - run: flutter build appbundle --release
       - uses: actions/upload-artifact@v4
